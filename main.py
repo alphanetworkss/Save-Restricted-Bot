@@ -228,7 +228,7 @@ def handle_private(message: pyrogram.types.messages_and_media.message.Message, c
 
     except Exception as e:
         logger.error(f"Unexpected error: {e}")
-        bot.send_message(message.chat.id, f"**User is already a participant of this chat.**", reply_to_message_id=message.id)
+        bot.send_message(message.chat.id, f"**Error** : __{e}__", reply_to_message_id=message.id)
 
 
 # get the type of message
