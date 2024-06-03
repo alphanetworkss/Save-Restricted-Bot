@@ -113,7 +113,7 @@ def save(client: pyrogram.client.Client, message: pyrogram.types.messages_and_me
 				
 				handle_private(message,chatid,msgid)
 				# try: handle_private(message,chatid,msgid)
-				# except Exception as e: bot.send_message(message.chat.id,f" : __{e}__", reply_to_message_id=message.id)
+				# except Exception as e: bot.send_message(message.chat.id,f"**Error** : __{e}__", reply_to_message_id=message.id)
 			
 			# bot
 			elif "https://t.me/b/" in message.text:
@@ -146,63 +146,89 @@ def save(client: pyrogram.client.Client, message: pyrogram.types.messages_and_me
 			time.sleep(3)
 
 
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 # handle private
 def handle_private(message: pyrogram.types.messages_and_media.message.Message, chatid: int, msgid: int):
-		msg: pyrogram.types.messages_and_media.message.Message = acc.get_messages(chatid,msgid)
-		msg_type = get_message_type(msg)
+    try:
+        msg: pyrogram.types.messages_and_media.message.Message = acc.get_messages(chatid, msgid)
+        msg_type = get_message_type(msg)
 
-		if "Text" == msg_type:
-			bot.send_message(message.chat.id, msg.text, entities=msg.entities, reply_to_message_id=message.id)
-			return
+        if "Text" == msg_type:
+            bot.send_message(message.chat.id, msg.text, entities=msg.entities, reply_to_message_id=message.id)
+            return
 
-		smsg = bot.send_message(message.chat.id, '__Downloading__', reply_to_message_id=message.id)
-		dosta = threading.Thread(target=lambda:downstatus(f'{message.id}downstatus.txt',smsg),daemon=True)
-		dosta.start()
-		file = acc.download_media(msg, progress=progress, progress_args=[message,"down"])
-		os.remove(f'{message.id}downstatus.txt')
+        smsg = bot.send_message(message.chat.id, '__Downloading__', reply_to_message_id=message.id)
+        dosta = threading.Thread(target=lambda: downstatus(f'{message.id}downstatus.txt', smsg), daemon=True)
+        dosta.start()
+        file = acc.download_media(msg, progress=progress, progress_args=[message, "down"])
+        os.remove(f'{message.id}downstatus.txt')
 
-		upsta = threading.Thread(target=lambda:upstatus(f'{message.id}upstatus.txt',smsg),daemon=True)
-		upsta.start()
-		
-		if "Document" == msg_type:
-			try:
-				thumb = acc.download_media(msg.document.thumbs[0].file_id)
-			except: thumb = None
-			
-			bot.send_document(message.chat.id, file, thumb=thumb, caption=msg.caption, caption_entities=msg.caption_entities, reply_to_message_id=message.id, progress=progress, progress_args=[message,"up"])
-			if thumb != None: os.remove(thumb)
+        upsta = threading.Thread(target=lambda: upstatus(f'{message.id}upstatus.txt', smsg), daemon=True)
+        upsta.start()
 
-		elif "Video" == msg_type:
-			try: 
-				thumb = acc.download_media(msg.video.thumbs[0].file_id)
-			except: thumb = None
+        if "Document" == msg_type:
+            try:
+                thumb = acc.download_media(msg.document.thumbs[0].file_id)
+            except:
+                thumb = None
 
-			bot.send_video(message.chat.id, file, duration=msg.video.duration, width=msg.video.width, height=msg.video.height, thumb=thumb, caption=msg.caption, caption_entities=msg.caption_entities, reply_to_message_id=message.id, progress=progress, progress_args=[message,"up"])
-			if thumb != None: os.remove(thumb)
+            bot.send_document(message.chat.id, file, thumb=thumb, caption=msg.caption, caption_entities=msg.caption_entities, reply_to_message_id=message.id, progress=progress, progress_args=[message, "up"])
+            if thumb is not None:
+                os.remove(thumb)
 
-		elif "Animation" == msg_type:
-			bot.send_animation(message.chat.id, file, reply_to_message_id=message.id)
-			   
-		elif "Sticker" == msg_type:
-			bot.send_sticker(message.chat.id, file, reply_to_message_id=message.id)
+        elif "Video" == msg_type:
+            try:
+                thumb = acc.download_media(msg.video.thumbs[0].file_id)
+            except:
+                thumb = None
 
-		elif "Voice" == msg_type:
-			bot.send_voice(message.chat.id, file, caption=msg.caption, thumb=thumb, caption_entities=msg.caption_entities, reply_to_message_id=message.id, progress=progress, progress_args=[message,"up"])
+            bot.send_video(message.chat.id, file, duration=msg.video.duration, width=msg.video.width, height=msg.video.height, thumb=thumb, caption=msg.caption, caption_entities=msg.caption_entities, reply_to_message_id=message.id, progress=progress, progress_args=[message, "up"])
+            if thumb is not None:
+                os.remove(thumb)
 
-		elif "Audio" == msg_type:
-			try:
-				thumb = acc.download_media(msg.audio.thumbs[0].file_id)
-			except: thumb = None
-				
-			bot.send_audio(message.chat.id, file, caption=msg.caption, caption_entities=msg.caption_entities, reply_to_message_id=message.id, progress=progress, progress_args=[message,"up"])   
-			if thumb != None: os.remove(thumb)
+        elif "Animation" == msg_type:
+            bot.send_animation(message.chat.id, file, reply_to_message_id=message.id)
 
-		elif "Photo" == msg_type:
-			bot.send_photo(message.chat.id, file, caption=msg.caption, caption_entities=msg.caption_entities, reply_to_message_id=message.id)
+        elif "Sticker" == msg_type:
+            bot.send_sticker(message.chat.id, file, reply_to_message_id=message.id)
 
-		os.remove(file)
-		if os.path.exists(f'{message.id}upstatus.txt'): os.remove(f'{message.id}upstatus.txt')
-		bot.delete_messages(message.chat.id,[smsg.id])
+        elif "Voice" == msg_type:
+            bot.send_voice(message.chat.id, file, caption=msg.caption, thumb=thumb, caption_entities=msg.caption_entities, reply_to_message_id=message.id, progress=progress, progress_args=[message, "up"])
+
+        elif "Audio" == msg_type:
+            try:
+                thumb = acc.download_media(msg.audio.thumbs[0].file_id)
+            except:
+                thumb = None
+
+            bot.send_audio(message.chat.id, file, caption=msg.caption, caption_entities=msg.caption_entities, reply_to_message_id=message.id, progress=progress, progress_args=[message, "up"])
+            if thumb is not None:
+                os.remove(thumb)
+
+        elif "Photo" == msg_type:
+            bot.send_photo(message.chat.id, file, caption=msg.caption, caption_entities=msg.caption_entities, reply_to_message_id=message.id)
+
+        os.remove(file)
+        if os.path.exists(f'{message.id}upstatus.txt'):
+            os.remove(f'{message.id}upstatus.txt')
+        bot.delete_messages(message.chat.id, [smsg.id])
+
+    except pyrogram.errors.exceptions.bad_request_400.ChannelInvalid as e:
+        logger.error(f"ChannelInvalid Error: {e}")
+        bot.send_message(message.chat.id, f"**send privet channel joining link**", reply_to_message_id=message.id)
+
+    except pyrogram.errors.exceptions.bad_request_400.UserAlreadyParticipant:
+        logger.warning("User is already a participant of this chat.")
+        # Handle the case where the user is already a participant (if needed)
+
+    except Exception as e:
+        logger.error(f"Unexpected error: {e}")
+        bot.send_message(message.chat.id, f"__{e}__", reply_to_message_id=message.id)
 
 
 # get the type of message
@@ -257,22 +283,23 @@ __just send post/s link__
 __first send invite link of the chat (unnecessary if the account of string session already member of the chat)
 then send post/s link__
 
-**FOR BOT CHATS**
+# **FOR BOT CHATS**
 
-__send link with '/b/', bot's username and message id, you might want to install some unofficial client to get the id like below__
+# __send link with '/b/', bot's username and message id, you might want to install some unofficial client to get the id like below__
 
-```
-https://t.me/b/botusername/4321
-```
+# ```
+# https://t.me/b/botusername/4321
+# ```
 
-**MULTI POSTS**
+# **MULTI POSTS**
 
-__send public/private posts link as explained above with formate "from - to" to send multiple messages like below__
+# __send public/private posts link as explained above with formate "from - to" to send multiple messages like below__
 
-```
-https://t.me/xxxx/1001-1010
-https://t.me/c/xxxx/101 - 120
-```
+# ```
+# https://t.me/xxxx/1001-1010
+
+# https://t.me/c/xxxx/101 - 120
+# ```
 
 __note that space in between doesn't matter__
 """
