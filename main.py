@@ -84,7 +84,7 @@ def save(client: pyrogram.client.Client, message: pyrogram.types.messages_and_me
 		try:
 			try: acc.join_chat(message.text)
 			except Exception as e: 
-				bot.send_message(message.chat.id,f"**Error** : __{e}__", reply_to_message_id=message.id)
+				bot.send_message(message.chat.id,f"__{e}__", reply_to_message_id=message.id)
 				return
 			bot.send_message(message.chat.id,"**Chat Joined**", reply_to_message_id=message.id)
 		except UserAlreadyParticipant:
@@ -113,7 +113,7 @@ def save(client: pyrogram.client.Client, message: pyrogram.types.messages_and_me
 				
 				handle_private(message,chatid,msgid)
 				# try: handle_private(message,chatid,msgid)
-				# except Exception as e: bot.send_message(message.chat.id,f"**Error** : __{e}__", reply_to_message_id=message.id)
+				# except Exception as e: bot.send_message(message.chat.id,f" : __{e}__", reply_to_message_id=message.id)
 			
 			# bot
 			elif "https://t.me/b/" in message.text:
@@ -123,7 +123,7 @@ def save(client: pyrogram.client.Client, message: pyrogram.types.messages_and_me
 					bot.send_message(message.chat.id,f"**String Session is not Set**", reply_to_message_id=message.id)
 					return
 				try: handle_private(message,username,msgid)
-				except Exception as e: bot.send_message(message.chat.id,f"**Error** : __{e}__", reply_to_message_id=message.id)
+				except Exception as e: bot.send_message(message.chat.id,f"__{e}__", reply_to_message_id=message.id)
 
 			# public
 			else:
@@ -140,7 +140,7 @@ def save(client: pyrogram.client.Client, message: pyrogram.types.messages_and_me
 						bot.send_message(message.chat.id,f"**String Session is not Set**", reply_to_message_id=message.id)
 						return
 					try: handle_private(message,username,msgid)
-					except Exception as e: bot.send_message(message.chat.id,f"**Error** : __{e}__", reply_to_message_id=message.id)
+					except Exception as e: bot.send_message(message.chat.id,f"__{e}__", reply_to_message_id=message.id)
 
 			# wait time
 			time.sleep(3)
